@@ -1,0 +1,6 @@
+version : '3.8'
+
+
+services:
+  auth:
+    image: auth:0.1
