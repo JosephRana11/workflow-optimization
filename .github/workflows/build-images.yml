@@ -2,24 +2,23 @@ name: Docker Image Builder
 
 on:
   push:
-    branches: ["master" , "dev"]
+    branches: ["master", "dev"]
   pull_request:
-    branches: ["master" , "dev"]
+    branches: ["master", "dev"]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
-        matrix:
-            service:
-               - auth
-               - backend
-               - frontend    
+      matrix:
+        service:
+          - auth
+          - backend
+          - frontend    
 
     steps:
-      - name: Access Branch
+      - name: Checkout code with submodules
         if: github.event_name == 'pull_request'
-
         uses: actions/checkout@v2
         with:
           submodules: "recursive"
@@ -30,4 +29,4 @@ jobs:
       - name: Build Docker images
         id: docker_build
         run: | 
-          docker build -f ${{ matrix.service }}/Dockerfile -t ${{matrix.service}}:latest .  
+          docker build -f ${{ matrix.service }}/Dockerfile -t ${{ matrix.service }}:latest .  
