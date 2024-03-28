@@ -30,4 +30,4 @@ jobs:
       - name: Build Docker images
         id: docker_build
         run: | 
-          docker build -f ${{matrix.service}}/Dockerfile -t ${{matrix.service}}:latest .
+          docker build -f ${{ matrix.service }}/Dockerfile -t ${{matrix.service}}:latest .  
