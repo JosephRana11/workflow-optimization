@@ -22,13 +22,17 @@ jobs:
         with:
           submodules: "recursive"
   
+      - name: Determine changed services
+        id: changed_files
+        run: |
+          echo "::set-output name=services::$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -oE '^(auth|backend|frontend)' | uniq)"
+  
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
         
-  
-      - name: Build Docker image
-        uses: docker/build-push-action@v5
-        with:
-          push: false
-          tags: ${{matrix.service}}:latest
-          context: ${{matrix.service}}
+      - name: Build Docker images
+        id: docker_build
+        run: |
+          for service in ${{ steps.changed_files.outputs.services }}; do
+            docker build -f $service/Dockerfile -t $service:latest .  
+          done
