@@ -7,7 +7,8 @@ on:
     branches: ["master", "dev"]
 
 jobs:
-  build:
+  build_on_pr:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -15,18 +16,19 @@ jobs:
           - auth
           - backend
           - frontend    
-
     steps:
       - name: Checkout code with submodules
-        if: github.event_name == 'pull_request'
         uses: actions/checkout@v2
         with:
           submodules: "recursive"
-
+  
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: Build Docker images
-        id: docker_build
-        run: | 
-          docker build -f ${{ matrix.service }}/Dockerfile -t ${{ matrix.service }}:latest .  
+        
+  
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          push: false
+          tags: ${{matrix.service}}:latest
+          context: ${{matrix.service}}
