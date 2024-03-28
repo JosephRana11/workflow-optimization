@@ -20,19 +20,25 @@ jobs:
       - name: Checkout code with submodules
         uses: actions/checkout@v2
         with:
-          submodules: "recursive"
-  
+          submodules: "fetch-depth:2"
+
       - name: Determine changed services
         id: changed_files
         run: |
-          echo "::set-output name=services::$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -oE '^(auth|backend|frontend)' | uniq)"
+          if [[ $(git diff --name-only HEAD $(git merge-base HEAD main)) == *"${{matrix.service}}"* ]]; then
+            echo "::set-output name=service_changed::true"
+          else
+            echo "::set-output name=service_changed::false"
+          fi
   
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
         
-      - name: Build Docker images
-        id: docker_build
-        run: |
-          for service in ${{ steps.changed_files.outputs.services }}; do
-            docker build -f $service/Dockerfile -t $service:latest .  
-          done
+  
+      - name: Build Docker image
+        if: steps.changed_files.outputs.service_changed == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          push: false
+          tags: ${{matrix.service}}:latest
+          context: ${{matrix.service}}
